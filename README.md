@@ -10,7 +10,7 @@
    1. [Scikit-Learn Pipeline](#scikit-learn-pipeline)
       1. [Data](#data)
       1. [Scikit-Learn Logistic Regression](#scikit-learn-logistic-regression)
-      1. [#### Hyperparameter Tuning using HyperDrive](#hperparameter-tuning-using-hyperDrive)
+      1. [Hyperparameter Tuning using HyperDrive](#hperparameter-tuning-using-hyperDrive)
 1. [AutoML](#automl)
 1. [Pipeline Comparison](#pipeline-comparison)
 1. [Future Work](#future-work)
@@ -44,52 +44,80 @@ This model is then compared to an Azure AutoML run.
   1. Automated ML was used to come up with the best possible algorithm and hyperparameters to find the best model
 - Both these approaches were extecuted using Jupyter Notebook and the Azure ML SDK.
 
-### Scikit-Learn Principle:
-#### Data
+### Scikit-Learn Pipeline:
+
+#### Data Preparation
 - First, the dataset was loaded from the given [URL](https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv) into the notebook using the _TabularDatasetFactory_ class
 - The given dataset was then cleaned using the clean_data() method predefined in the [train.py file](https://github.com/bharati-21/AZMLND_Optimizing_a_Pipeline_in_Azure/blob/master/train.py) that performed various preprocessing steps (such as one hot encoding) on the data, after which the data wass split into train and test sets in 80-20 ratio
-
 #### Scikit-Learn Logistic Regression
-- The cleaned train data was then fed to the scikit-learn based logistic regression algorithm which took 2 hyperparameters:
-  1. **--C:** This parameter specifies inverse regularization strength that helps in addressing the overfitting problem which commonly occurs in Machine Learning. Regularization helps in avoiding overfitting by shrinking the model's coefficients towards zero. A larger C implies less regularization; while a smaller C means more regularization. 
-	1. **--max_iter:** This parameter states the maximum number of iterations that should be taken to converge
-
+- The split train data was then fed to the scikit-learn based logistic regression algorithm which took 2 hyperparameters: `--C`, which is the inverse of regularization strength and `--max-iter`, which is the maximum number of iterations to converge.
 #### Hyperparameter Tuning using HyperDrive
-- To select the best hyperparameters for the model, the HyperDrive was used which automated parameter tuning
-- The steps used for effective hyperparameter tuning using the HyperDrive package were:
+- The following steps were performed for effective hyperparameter tuning using the HyperDrive:
 1. **Defining the parameter search space:**
-   - This is done by exploring the range of values defined for each hyperparameter
-   - Range of Hyperparameters depends on the type of the parameter- whether it's discrete or continuous
-   - _This project uses the `discrete search space for --C` parameter and a `continuous search space for --max_iter_`
+   - A search space was specified to explore a range of values defined for each hyperparameter
+```
+search_space = { 
+	"--C" : uniform(0.01, 1),
+    	"--max_iter" : choice(100, 200, 300, 400, 500) 
+}
+```
 1. **Sampling the Hyperparameter space:**
-   - To find these values over the specified search space a sampling method is used. Azure ML supports `Random sampling`, `Grid sampling`, and `Bayesian sampling`
+   - To find values over the specified search space a sampling method was used.
    - _This project uses the Random Sampling method to choose values from the mentioned search space_
+```
+ps = RandomParameterSampling (
+	search_space
+)
+```  
 1. **Specifying a primary metric:**
    - A primary metric is specified to optimize hyperparameter tuning. 
    - Each training run is evaluated for the primary metric. 
-   - The attributes specified are: 
-     - primary_metric_name: Name of the primary metric needs to exactly match the name of the metric logged by the training script
-     - primary_metric_goal: It can be either `PrimaryMetricGoal.MAXIMIZE` or `PrimaryMetricGoal.MINIMIZE` (to maximize or minimize the primary metric when evaluating the runs.)
+```
+primary_metric = 'accuracy'
+metric_goal = PrimaryMetricGoal.MAXIMIZE
+```
 1. **Specifying early termination policy:**
    - Early termination policy forces low performing runs to automatically terminate so that resources are not wasted on runs that will not give potential results
-   - _This project uses the `Bandit Policy` which is based on a slack factor/slack amount and an evaluation interval. Bandit terminates runs where the primary metric is not within the specified slack factor/slack amount compared to the best performing run._
+   - `Bandit Policy` used in this project is based on a _slack factor/slack amount_ and an _evaluation interval_. A run is terminated if the primary metric is not within the slack amount compared to the best performing run
+```
+policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=5)
+```
 1. **Allocating resources**
    - Resources are allocated and controlled for running the hyperparameter tuning experiment
-   - The resources to be specified are: 
-     - max_total_runs: Maximum number of training runs. (An integer between 1 and 1000)
-     - max_duration_minutes: Maximum duration, in minutes, of the hyperparameter tuning experiment. Runs yet to be finished after this duration are canceled
+```
+max_runs = 20
+max_concurrent_runs = 4
+```
+1. **Using an Estimator**
+   - The estimator is used to begin the training and invoke the script file.
+```
+est = SKLearn (
+    source_directory= os.path.join("./"),
+    compute_target= cpu_cluster,
+    entry_script= "train.py"
+)
+```
 1. **Configuring the experiment**
-   - The attributes required to configure the hyperparameter tuning experiment are: `hyperparameter search space`, `Early termination policy`, `Primary metric`, `Resource allocation settings`, `Estimator` 
-  - This project uses the SKLearn() method as an estimator that begins the training and invokes the script file.
+   - The attributes defined in the previous steps are specified to configure the hyperparameter tuning experiment before submitting the run using HyperDriveConfig()
 1. **Submitting the experiment**
-  - The experiment is submitted via the `Experiment` class which acts as the entry point for creating and working with experiments. 
+  - Experiment act an entry point for model runs. The run is submitted when submit() is invoked by the experiment object
+```
+hyperdrive_run = experiment.submit(hyperdrive_config)
+```
 1. **Visualizing the training runs**
    - The Notebook widget is used to visualize the experiment, run progress, logs and model metrics.
+```
+RunDetails(hyperdrive_run).show()
+```
 1. **Selecting the configurations of the best model**
-   - Once all of the hyperparameter tuning runs completes, the best performing configuration and hyperparameter values are identified
-
+   - Once all of the hyperparameter tuning runs completes, the best performing configuration and hyperparameter values are obtained
+```
+best_run = hyperdrive_run.get_best_run_by_primary_metric()
+```
 - **What are the benefits of the parameter sampler you chose?**
+  - Random Sampling works with both discrete and continous search space unlike Grid Sampling. It also supports early termination policy unlike Bayesian Sampling. Hence Random Sampler helps in performing trial and error with values chosen over the search space and then refine the search space to obtain best results.
 - **What are the benefits of the early stopping policy you chose?**
+  - Early stopping helps in avoiding unnecessary usage of resources assigned to runs that performs poorly. This is ensured by terminating runs whose primary metric is not within the slack amount specified by the policy. 
 
 ### AutoML
 **In 1-2 sentences, describe the model and hyperparameters generated by AutoML.**
