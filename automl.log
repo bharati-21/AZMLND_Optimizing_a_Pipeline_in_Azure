@@ -294,3 +294,15 @@ ExceptionTarget: azureml-core
 2021-01-07 17:13:26.517 - INFO - 5956 - azureml.automl.core.package_utilities._log_activity:92 - ActivityCompleted: Activity=PackagesCheck, HowEnded=Failure, Duration=16.09[ms]
 2021-01-07 17:18:10.946 - INFO - 5956 - azureml.train.automl.automlconfig._start_execution:207 - Submitting remote.
 2021-01-07 17:21:56.397 - INFO - 5956 - azureml.train.automl.automlconfig._start_execution:207 - Submitting remote.
+2021-01-08 06:00:38.318 - INFO - 15843 - azureml.train.automl.automlconfig._start_execution:207 - Submitting remote.
+2021-01-08 07:07:12.127 - INFO - 15843 - azureml.train.automl.run._log_activity:54 - ActivityStarted: GetOutput
+2021-01-08 07:07:12.148 - INFO - 15843 - azureml.train.automl.run._log_activity:54 - ActivityStarted: GetOutput
+2021-01-08 07:07:12.161 - INFO - 15843 - azureml.train.automl.run._log_activity:54 - ActivityStarted: GetChildren
+2021-01-08 07:07:12.339 - INFO - 15843 - azureml.train.automl.run._log_activity:92 - ActivityCompleted: Activity=GetChildren, HowEnded=Success, Duration=178.47[ms]
+2021-01-08 07:07:12.339 - INFO - 15843 - azureml.train.automl.run._log_activity:92 - ActivityCompleted: Activity=GetOutput, HowEnded=Success, Duration=191.18[ms]
+2021-01-08 07:07:12.345 - INFO - 15843 - azureml.train.automl._model_download_utilities._log_activity:54 - ActivityStarted: DownloadModel
+2021-01-08 07:07:20.321 - INFO - 15843 - azureml.automl.runtime.distributed.utilities.horovod_initialized:58 - Horovod not found in current environment. Distribution via Horovod will be disabled.
+2021-01-08 07:07:22.604 - INFO - 15843 - azureml.automl.runtime.featurization.data_transformer._logger_wrapper:81 - Feature sweeping enabled: False
+2021-01-08 07:07:22.604 - INFO - 15843 - azureml.automl.runtime.featurization.data_transformer._logger_wrapper:81 - Feature sweeping timeout: 86400
+2021-01-08 07:07:22.830 - INFO - 15843 - azureml.train.automl._model_download_utilities._log_activity:92 - ActivityCompleted: Activity=DownloadModel, HowEnded=Success, Duration=10484.48[ms]
+2021-01-08 07:07:22.830 - INFO - 15843 - azureml.train.automl.run._log_activity:92 - ActivityCompleted: Activity=GetOutput, HowEnded=Success, Duration=10703.15[ms]
