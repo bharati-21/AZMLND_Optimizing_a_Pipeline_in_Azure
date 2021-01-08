@@ -48,18 +48,19 @@ def main():
 
     args = parser.parse_args()
 
-    ### YOUR CODE HERE ###a
+    ### YOUR CODE HERE ###
 
     # TODO: Create TabularDataset using TabularDatasetFactory
     # Data is located at:
     url_path = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
+    
     ds = Dataset.Tabular.from_delimited_files(path=url_path)
     print(ds.to_pandas_dataframe())
 
     x, y = clean_data(ds)
 
     # TODO: Split data into train and test sets.
-    x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2)
+    x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3)
 
     run = Run.get_context()
 
@@ -76,3 +77,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
