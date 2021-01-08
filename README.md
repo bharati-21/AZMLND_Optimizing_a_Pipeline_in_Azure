@@ -47,73 +47,23 @@ This model is then compared to an Azure AutoML run.
 ### Scikit-Learn Pipeline:
 
 #### Data Preparation
-- First, the dataset was loaded from the given [URL](https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv) into the notebook using the _TabularDatasetFactory_ class
-- The given dataset was then cleaned using the clean_data() method predefined in the [train.py file](https://github.com/bharati-21/AZMLND_Optimizing_a_Pipeline_in_Azure/blob/master/train.py) that performed various preprocessing steps (such as one hot encoding) on the data, after which the data wass split into train and test sets in 80-20 ratio
-#### Scikit-Learn Logistic Regression
-- The split train data was then fed to the scikit-learn based logistic regression algorithm which took 2 hyperparameters: `--C`, which is the inverse of regularization strength and `--max-iter`, which is the maximum number of iterations to converge.
+- First, the dataset is loaded from the given [URL](https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv) into the notebook using the _TabularDatasetFactory_ class
+- The given dataset is then cleaned using the clean_data() method predefined in the [train.py file](https://github.com/bharati-21/AZMLND_Optimizing_a_Pipeline_in_Azure/blob/master/train.py) that performs various preprocessing steps (such as one hot encoding) on the data, after which the data is split into train and test sets in 70-30 ratio
+
+#### Scikit-Learn Logistic Regression Algorithm
+- The split train data is then fed to the scikit-learn based logistic regression algorithm which takes in 2 hyperparameters: `--C`, which is the inverse of regularization strength and `--max-iter`, which is the maximum number of iterations that should be taken to converge.
+
 #### Hyperparameter Tuning using HyperDrive
-- The following steps were performed for effective hyperparameter tuning using the HyperDrive:
-1. **Defining the parameter search space:**
-   - A search space was specified to explore a range of values defined for each hyperparameter
-```
-search_space = { 
-	"--C" : uniform(0.01, 1),
-    	"--max_iter" : choice(100, 200, 300, 400, 500) 
-}
-```
-1. **Sampling the Hyperparameter space:**
-   - To find values over the specified search space a sampling method was used.
-   - _This project uses the Random Sampling method to choose values from the mentioned search space_
-```
-ps = RandomParameterSampling (
-	search_space
-)
-```  
-1. **Specifying a primary metric:**
-   - A primary metric is specified to optimize hyperparameter tuning. 
-   - Each training run is evaluated for the primary metric. 
-```
-primary_metric = 'accuracy'
-metric_goal = PrimaryMetricGoal.MAXIMIZE
-```
-1. **Specifying early termination policy:**
-   - Early termination policy forces low performing runs to automatically terminate so that resources are not wasted on runs that will not give potential results
-   - `Bandit Policy` used in this project is based on a _slack factor/slack amount_ and an _evaluation interval_. A run is terminated if the primary metric is not within the slack amount compared to the best performing run
-```
-policy = BanditPolicy(evaluation_interval=2, slack_factor=0.1, delay_evaluation=5)
-```
-1. **Allocating resources**
-   - Resources are allocated and controlled for running the hyperparameter tuning experiment
-```
-max_runs = 20
-max_concurrent_runs = 4
-```
-1. **Using an Estimator**
-   - The estimator is used to begin the training and invoke the script file.
-```
-est = SKLearn (
-    source_directory= os.path.join("./"),
-    compute_target= cpu_cluster,
-    entry_script= "train.py"
-)
-```
-1. **Configuring the experiment**
-   - The attributes defined in the previous steps are specified to configure the hyperparameter tuning experiment before submitting the run using HyperDriveConfig()
-1. **Submitting the experiment**
-  - Experiment act an entry point for model runs. The run is submitted when submit() is invoked by the experiment object
-```
-hyperdrive_run = experiment.submit(hyperdrive_config)
-```
-1. **Visualizing the training runs**
-   - The Notebook widget is used to visualize the experiment, run progress, logs and model metrics.
-```
-RunDetails(hyperdrive_run).show()
-```
-1. **Selecting the configurations of the best model**
-   - Once all of the hyperparameter tuning runs completes, the best performing configuration and hyperparameter values are obtained
-```
-best_run = hyperdrive_run.get_best_run_by_primary_metric()
-```
+- The HyperDrive package is used to optimize hyperparameter tuning by using the HyperDriveConfig() that takes in several configuration attributes:
+  1. Estimator (`est`): An `SKLearn` estimator is used to begin the training and invoke the training script file.
+  1. Parameter sampler (`hyperparameter_sampling `): A `RandomParameterSampling` sampler is used to randomly select values specified in the search space for the two parameters of Logistic Regression algorithm (--c and --max_iter)
+  1. Policy (`policy`): An early termination policy, `BanditPolicy`, is passed to ensure low performing runs are terminated and resources are not wasted
+  1. Primary Metric (`primary_metric_name`): The primary metric for evaluating runs is specified. The project uses `accuracy` as the primary metric with the goal (`primary_metric_goal`) value `primary_metric_goal.MAXIMIZE` to maximize the primary metric in every run
+  1. Resources for controlling and running the experiment is specified using `max_concurrent_runs` (Maximum number of runs that can run concurrently in the experiment) and `max_total_runs` (Maximum number of training runs). 
+
+#### Submitting and Saving the best model
+- The Hyperdrive run is then submitted to the experiment which takes the hyperdrive configuration details as the parameter. Once the run is completed, the best metrics are obtained using `run.get_best_run_by_primary_metric()` and the model is tested for primary_metric (accuracy) using the test data from the script file. The best run is then registered after invoking `register_model()`.
+
 - **What are the benefits of the parameter sampler you chose?**
   - Random Sampling works with both discrete and continous search space unlike Grid Sampling. It also supports early termination policy unlike Bayesian Sampling. Hence Random Sampler helps in performing trial and error with values chosen over the search space and then refine the search space to obtain best results.
 - **What are the benefits of the early stopping policy you chose?**
@@ -121,6 +71,26 @@ best_run = hyperdrive_run.get_best_run_by_primary_metric()
 
 ### AutoML
 **In 1-2 sentences, describe the model and hyperparameters generated by AutoML.**
+- AutoML (Automated Machine Learning) is used to simplify various time intensive and inexhaustive Machine Learning tasks such as feature engineering, feature selection, hyperparameter selection, training, testing etc. AutoML helps in training over hundereds of models in a single day rather than manually training and waiting for obtaining an accurate model.  
+- The same Bank Marketing Dataset from the [USI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing) is classified again by using AutoML.  
+- AutoML is used to automate the process of choosing an algorithm and the values for the chosen algorithm's hyperparameters, that will result in the best model which classifies the given dataset. 
+- The dataset is uploaded from the URL via the _TabularDatasetFactory_ class. The data is then cleaned using clean_data from the [train.py file](https://github.com/bharati-21/AZMLND_Optimizing_a_Pipeline_in_Azure/blob/master/train.py), and then split into train and test sets in 70-30 ratio 
+- The `AutoMLConfig` object takes attributes required to configure the experiement run such as: 
+  1. Experiment Timeout (`experiment_timeout_minutes`): Maximum amount of time (in minutes) that all iterations combined can take before the experiment terminates. 
+  1. Task to be performed (`task`): The tpye of task that needs to be run such as classification, regression, forecasting etc. In this project `classification` is the task to be performed.
+  1. Primary Metric (`primary_metric`): The primary metric which is used to evaluate every run. In this case, `accuracy` is the primary metric to be evaluated.
+  1. Training Data (`training_data`) = The _TabularDataset_ that contains the training data,
+  1. Label Column (`label_column_name`): Name of the column that needs to be predicted. In this case the column that contains "yes" or "no" to perform classification.
+  1. Cross Validations (`n_cross_validations`): Specifies the number of cross validations that needs to be performed on each model by splitting the dataset into n subsets.
+  1. Compute Target (`compute_target`): The cluster used to run the experiment on. 
+- The algorithms that were used to train the model were:
+  1. Algorithms used
+  1. LightGBM
+  1. XGBoostClassifier
+  1. RandomForest
+  1. LightGBM
+  1. LogisticRegression
+  1. RandomForest
 
 ## Pipeline Comparison
 **Compare the two models and their performance. What are the differences in accuracy? In architecture? If there was a difference, why do you think there was one?**
