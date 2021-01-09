@@ -22,6 +22,7 @@
 1. [Pipeline Comparison](#pipeline-comparison)
 1. [Future Work](#future-work)
 1. [Proof of Cluster Clean Up](#proof-of-cluster-clean-up)
+1. [Resources](#resources)
 
 
 ## Overview
@@ -131,3 +132,9 @@ This model is then compared to an Azure AutoML run.
 
 ## Proof of Cluster Clean Up
 ![Image of Proof of Cluster Clean Up](Images/Deleting_Compute_Cluster.png)
+
+## Resources
+1. [Microsoft Official Documentation for Azure ML](https://docs.microsoft.com/en-us/azure/machine-learning/)
+1. [Udacity Machine Learning Engineer with Microsoft Azure Nanodegree Program](https://classroom.udacity.com/nanodegrees/nd00333/parts/e0c51a58-32b4-4761-897b-92f6183148ac)
+1. [Scikit-Learn Logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
+1. [Scikit-Learn Train and Test Spli Data](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html)
