@@ -8,10 +8,17 @@
    1. [Result Summary](#result-summary)
 1. [Approaches](#approaches)
    1. [Scikit-Learn Pipeline](#scikit-learn-pipeline)
-      1. [Data](#data)
-      1. [Scikit-Learn Logistic Regression](#scikit-learn-logistic-regression)
+      1. [Data Preparation](#data)
+      1. [Pipeline Architecture](#pipeline-architecture)
+      1. [Scikit-Learn Logistic Regression Algorithm](#scikit-learn-logistic-regression-algorithm)
       1. [Hyperparameter Tuning using HyperDrive](#hperparameter-tuning-using-hyperDrive)
-1. [AutoML](#automl)
+      1. [Submitting and Saving the Best Model](#submitting-and-saving-best-model)
+   1. [AutoML](#automl)
+      1. [Data Preparation](#data)
+      1. [Pipeline Architecture](#pipeline-architecture)
+      1. [AutoML Configuration](#auto-ml-configuration)
+      1. [Submitting and Saving the Best Model](#submitting-and-saving-best-model)
+      1. [Algorithms Used](#algorithms-used)
 1. [Pipeline Comparison](#pipeline-comparison)
 1. [Future Work](#future-work)
 1. [Proof of Cluster Clean Up](#proof-of-cluster-clean-up)
@@ -39,20 +46,19 @@ This model is then compared to an Azure AutoML run.
 * The Logistic Regression model gave an accuracy of 0.91442 and the hyperparameters for the model were selectrd using HyperDrive
 
 ## Approaches
-- Two approaches were used in this project to classify the given data:
-  1. A Scikit-Learn based Logistic Regression algorithm was used to classify the data and the hyperparameters of the model were tuned using the HyperDrive
-  1. Automated ML was used to come up with the best possible algorithm and hyperparameters to find the best model
+- Two approaches were used in this project to classify the given data and come up with the best possible model:
+  1. A Scikit-Learn Pipeline Regression
+  1. Automated ML (AutoML)
 - Both these approaches were extecuted using Jupyter Notebook and the Azure ML SDK.
 
 ### Scikit-Learn Pipeline:
-
+- This approach uses the Scikit-learn Logistic Regression algorithm to train the model with the dataset. The hyperparameters for Logistic Regression are chosen and optimized using the HyperDrve to obtain the best model with the highest accuracy.
+#### Pipeline Architecture:
 #### Data Preparation
-- First, the dataset is loaded from the given [URL](https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv) into the notebook using the _TabularDatasetFactory_ class
+- The dataset is loaded from the given [URL](https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv) into the notebook using the _TabularDatasetFactory_ class
 - The given dataset is then cleaned using the clean_data() method predefined in the [train.py file](https://github.com/bharati-21/AZMLND_Optimizing_a_Pipeline_in_Azure/blob/master/train.py) that performs various preprocessing steps (such as one hot encoding) on the data, after which the data is split into train and test sets in 70-30 ratio
-
 #### Scikit-Learn Logistic Regression Algorithm
 - The split train data is then fed to the scikit-learn based logistic regression algorithm which takes in 2 hyperparameters: `--C`, which is the inverse of regularization strength and `--max-iter`, which is the maximum number of iterations that should be taken to converge.
-
 #### Hyperparameter Tuning using HyperDrive
 - The HyperDrive package is used to optimize hyperparameter tuning by using the HyperDriveConfig() that takes in several configuration attributes:
   1. Estimator (`est`): An `SKLearn` estimator is used to begin the training and invoke the training script file.
@@ -60,8 +66,7 @@ This model is then compared to an Azure AutoML run.
   1. Policy (`policy`): An early termination policy, `BanditPolicy`, is passed to ensure low performing runs are terminated and resources are not wasted
   1. Primary Metric (`primary_metric_name`): The primary metric for evaluating runs is specified. The project uses `accuracy` as the primary metric with the goal (`primary_metric_goal`) value `primary_metric_goal.MAXIMIZE` to maximize the primary metric in every run
   1. Resources for controlling and running the experiment is specified using `max_concurrent_runs` (Maximum number of runs that can run concurrently in the experiment) and `max_total_runs` (Maximum number of training runs). 
-
-#### Submitting and Saving the best model
+#### Submitting Run and Saving the best model
 - The Hyperdrive run is then submitted to the experiment which takes the hyperdrive configuration details as the parameter. Once the run is completed, the best metrics are obtained using `run.get_best_run_by_primary_metric()` and the model is tested for primary_metric (accuracy) using the test data from the script file. The best run is then registered after invoking `register_model()`.
 
 - **What are the benefits of the parameter sampler you chose?**
@@ -69,12 +74,16 @@ This model is then compared to an Azure AutoML run.
 - **What are the benefits of the early stopping policy you chose?**
   - Early stopping helps in avoiding unnecessary usage of resources assigned to runs that performs poorly. This is ensured by terminating runs whose primary metric is not within the slack amount specified by the policy. 
 
+<hr/>
+
 ### AutoML
-**In 1-2 sentences, describe the model and hyperparameters generated by AutoML.**
-- AutoML (Automated Machine Learning) is used to simplify various time intensive and inexhaustive Machine Learning tasks such as feature engineering, feature selection, hyperparameter selection, training, testing etc. AutoML helps in training over hundereds of models in a single day rather than manually training and waiting for obtaining an accurate model.  
+- AutoML (Automated Machine Learning) is used to simplify various time intensive Machine Learning tasks such as feature engineering, feature selection, hyperparameter selection, training, etc
+- This approach uses AutoML to automate the process of choosing an algorithm, and the values of hyperparameters for the chosen algorithm that will result in the best model with the highest accuracy 
+#### Pipeline Architecture
+#### Data Preparation
 - The same Bank Marketing Dataset from the [USI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing) is classified again by using AutoML.  
-- AutoML is used to automate the process of choosing an algorithm and the values for the chosen algorithm's hyperparameters, that will result in the best model which classifies the given dataset. 
 - The dataset is uploaded from the URL via the _TabularDatasetFactory_ class. The data is then cleaned using clean_data from the [train.py file](https://github.com/bharati-21/AZMLND_Optimizing_a_Pipeline_in_Azure/blob/master/train.py), and then split into train and test sets in 70-30 ratio 
+#### AutoML Configuration
 - The `AutoMLConfig` object takes attributes required to configure the experiement run such as: 
   1. Experiment Timeout (`experiment_timeout_minutes`): Maximum amount of time (in minutes) that all iterations combined can take before the experiment terminates. 
   1. Task to be performed (`task`): The tpye of task that needs to be run such as classification, regression, forecasting etc. In this project `classification` is the task to be performed.
@@ -83,14 +92,11 @@ This model is then compared to an Azure AutoML run.
   1. Label Column (`label_column_name`): Name of the column that needs to be predicted. In this case the column that contains "yes" or "no" to perform classification.
   1. Cross Validations (`n_cross_validations`): Specifies the number of cross validations that needs to be performed on each model by splitting the dataset into n subsets.
   1. Compute Target (`compute_target`): The cluster used to run the experiment on. 
-- The algorithms that were used to train the model were:
-  1. Algorithms used
-  1. LightGBM
-  1. XGBoostClassifier
-  1. RandomForest
-  1. LightGBM
-  1. LogisticRegression
-  1. RandomForest
+#### Submitting Run and Saving the Best Model
+- The AutoML run is then submitted to the experiment which takes the automl configuration details as the parameter. Once the run is completed, the best run and fitted model are obtained using `run.get_output()` and the model is tested for primary_metric (accuracy) using the test data from the script file. The best run is then registered after invoking `register_model()`. The metrics were obtained using `get_tags`
+#### Algortihms Used
+- The algorithms that were used to train the model are:
+  1. 
 
 ## Pipeline Comparison
 **Compare the two models and their performance. What are the differences in accuracy? In architecture? If there was a difference, why do you think there was one?**
@@ -99,5 +105,3 @@ This model is then compared to an Azure AutoML run.
 **What are some areas of improvement for future experiments? Why might these improvements help the model?**
 
 ## Proof of Cluster Clean Up
-**If you did not delete your compute cluster in the code, please complete this section. Otherwise, delete this section.**
-**Image of cluster marked for deletion**
