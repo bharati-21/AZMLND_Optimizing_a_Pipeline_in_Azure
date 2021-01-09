@@ -37,7 +37,7 @@ This model is then compared to an Azure AutoML run.
 - The data is classified using the column label y in the dataset that contains binary valuse ('yes' and 'no')**
 
 ### Project Workflow Steps
-![Image of Pipeline Architecture](Images/Project Pipeline Architecture.png)
+![Image of Pipeline Architecture](Images/Project_Pipeline_Architecture.png)
 
 ### Solution Summary
 - This project used two approaches to find the best possible model for classifying the given dataset:
