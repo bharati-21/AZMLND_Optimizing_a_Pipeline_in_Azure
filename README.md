@@ -40,13 +40,14 @@ This model is then compared to an Azure AutoML run.
 ![Image of Pipeline Architecture](Images/Project_Pipeline_Architecture.png)
 
 ### Solution Summary
+![Image of Project Experiments](Images/Experiments.png)
 - This project used two approaches to find the best possible model for classifying the given dataset:
   - Scikit-Learn based logistic regression which used the HyperDrive for effective hyperparameter tuning
   - Automated Machine Learning was used to build and choose the best model
  
 ### Result Summary
 * The best performing model was a VotingEnsemble algorithm that was selected through AutoML with an accuracy of 0.91663
-* The Logistic Regression model whose hyperparameters were tuned using HyperDrive gave an accuracy of 0.913101
+* The Logistic Regression model whose hyperparameters were tuned using HyperDrive gave an accuracy of 0.9131
 
 ## Approaches
 - Two approaches were used in this project to classify the given data and come up with the best possible model:
@@ -71,6 +72,8 @@ This model is then compared to an Azure AutoML run.
 #### Submitting Run and Saving the best model
 - The Hyperdrive run is then submitted to the experiment which takes the hyperdrive configuration details as the parameter. Once the run is completed, the best metrics are obtained using `run.get_best_run_by_primary_metric()` and the model is tested for primary_metric (accuracy) using the test data from the script file. The best run is then registered after invoking `register_model()`.
 #### Best Run Result
+![Image of HyperDrive Best Run Metrics](Images/HyperDrive_Best_Run_Metrics.png)
+
 - `Run ID`: HD_160377e7-7ee0-40f1-a79b-21cbcd7ffec6_13
 - `Run Accuracy`: 0.9131006575619626
 - `Run Learning Rate`: 100
@@ -101,6 +104,8 @@ This model is then compared to an Azure AutoML run.
 #### Submitting Run and Saving the Best Model
 - The AutoML run is then submitted to the experiment which takes the automl configuration details as the parameter. Once the run is completed, the best run and fitted model are obtained using `run.get_output()` and the model is tested for primary_metric (accuracy) using the test data from the script file. The best run is then registered after invoking `register_model()`. The metrics were obtained using `get_tags`
 #### Best Run Result 
+![Image of AutoML Best Run Metrics](Images/AutoML_Best_Run_Metrics_List.png)
+
 - `Run ID`: AutoML_6a134e7a-5f4f-44cb-a5b8-f187191ddf74_27
 - `Run Accuracy`: 0.9164968567092998
 - `ensembled_iterations`: [1, 0, 20, 23, 10, 5, 26, 7, 4]
@@ -108,8 +113,21 @@ This model is then compared to an Azure AutoML run.
 - `ensemble_weights`: [0.2, 0.2, 0.06666666666666667, 0.06666666666666667, 0.06666666666666667, 0.06666666666666667, 0.06666666666666667, 0.06666666666666667, 0.2]
 
 ## Pipeline Comparison
+- The experiment run and model trained for the datsaset using AutoML gave a higher accuracy (0.9165) than the model trained using Scikit-learn pipeline (0.9131) for the same dataset
+- Although the difference in accuracy between the two approaches is not large, this difference can be attributed to the difference in pipeline architecture and experiment steps
+- The experiment run using the scikit-learn architecture only uses one algorithm- Logistic Regression. Whereas the experiment run using AutoML tests various algorithms for the same dataset to find the best model
+- The hyperparameter search space, and the sampling method was manually entered in the HyperDrive experiment but experiment run using AutoML tuned and optimized this search for hyperparameters to find the best suitable model
+- Early termination policy was also mentioned in the HyperDrive experiment but that was chosen automatically in the AutoML experiment
+- The very less difference in accuracy for the two approaches can also be attributed by the fact the same dataset was used for both the runs
+- Also, it can be time consuming to try out different Algorithms for the HyperDrive experiment since different pipelines need to be built for every possible algorithm
+- It was also observed that the AutoML approach required less manual intervention and coding compared to the HyperDrive approach
 
 ## Future Work
-**What are some areas of improvement for future experiments? Why might these improvements help the model?**
+- For the HyperDrive experiment, Grid Sampling can be used as the sampling method to conduct an exhaustive search for hyperparameters to try for better accuracy
+- Various pipelines can also be built for the HyperDrive experiment for different kinds of algorithms that were used in AutoML experiment
+- Theoretically, a thorough review and study of the technique behind AutoML approach can be performed which can then be applied to the HyperDrive experiment
+- The Class balancing problem can be reviewed and fixed to decrease bias to avoid falsely perceived positives.
+- In the HyperDrive run experiment 
 
 ## Proof of Cluster Clean Up
+![Image of Proof of Cluster Clean Up](Images/Deleting_Compute_Cluster.png)
